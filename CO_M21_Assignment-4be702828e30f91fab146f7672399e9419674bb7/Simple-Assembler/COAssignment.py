@@ -2,6 +2,8 @@
 #group members: Aditya, Rishav,Samuel
 import sys
 assemblyfile=sys.stdin.read().splitlines()
+# with open("read.txt") as r:
+    # assemblyfile=r.read().splitlines()
 
 
 
@@ -27,7 +29,7 @@ add_count=0
 for line in assemblyfile:
     if(len(line)==0):continue
     x=list(line.split())
-    variable.append(x[0])
+    variable.append(x[0])    
     if x[0]=="var":
         continue    
     else:
@@ -40,7 +42,7 @@ for line in assemblyfile:
     if(len(line)==0):continue
     y=list(line.split())
     if y[0]=="var":
-        Var[y[1]]=add_count+1
+        Var[y[1]]=add_count
         add_count+=1
 
 # error of var not used at beginning
@@ -51,27 +53,27 @@ for i in range(0,len(variable)-1):
             print("Variables not declared at beginning.")
 
 Label_add={}
-c=0
+c=-1
 for line in assemblyfile:   # will store add of labels
-    c+=1
-    if(len(line)==0):continue
     y=list(line.split())
-
+    if(len(line)==0 or y[0]=="var"):continue
+    c+=1
     if y[0][-1]==":":
         Label_add[y[0]]=c
 
 
-
+c=0
 if add_count>256:
     print("Lines in code exceed 256 limit.")
 
 else:    
     #code to print errors if any
     for line in assemblyfile:
-        
+        c+=1
         if(len(line)==0):continue
         x=list(line.split())
         #print(x[0])
+        
         if len(x)>1 and x[0] in Label_add and x[1] in Instruction:
             x.pop(0)
        
@@ -110,11 +112,13 @@ else:
                                     print("Illegal use of FLAGS register.")
                         else:
                             print("Typos in register name.")
-                else :
-                    if(x[0]=="mov" and x[2][0]!="R"):
-                        if (x[2][0]!="$"):
-                            flag=1
-                            print("General Syntax error.")
+                
+                if(x[0]=="mov" and x[2][0]!="R"):
+                    if (x[2][0]=="FLAGS" ):
+                            continue
+                    #else:
+                     #   if(x[2][0]!="$"):    
+                      #      print("General Syntax error.")
 
 
                 #for Type C instruction
@@ -156,11 +160,15 @@ else:
                     if (x[0] not in Instruction.keys()):
                         print("Typos in instruction name.")
 
-                
+    if  c==len(assemblyfile):
+        if len(x)==1 and x[0]!="hlt":
+            print("Missing hlt instruction")
+        elif len(x)>1 and x[1]!="hlt":
+            print("Missing hlt instruction")
     #hlt not used error
-    if("hlt" not in assemblyfile):
-        flag=1
-        print("Missing hlt instruction") 
+    #if("hlt" not in assemblyfile):
+     #   flag=1
+      #  print("Missing hlt instruction") 
     
                 
     
@@ -239,7 +247,4 @@ else:
 
     
 
-     
-
-
-    
+         
