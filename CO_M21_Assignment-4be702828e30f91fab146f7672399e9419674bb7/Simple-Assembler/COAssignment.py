@@ -2,11 +2,11 @@
 #group members: Aditya, Rishav,Samuel
 import sys
 assemblyfile=sys.stdin.read().splitlines()
-#with open("read.txt") as r:
- #   assemblyfile=r.read().splitlines()
 
 
-REG_ADD={"R0":"000","R1":"001","R2":"010","R3":"011","R4":"100","R5":"101","R6":"110","FLAGS":"111"}
+
+REG_ADD={"R0":"000","R1":"001","R2":"010","R3":"011","R4":"100","R5":"101","R6":"110"}
+Flags_reg={"FLAGS":"111"}
 Instruction={"add":["00000","A"],"sub":["00001","A"],"mov":["00010","B"],"mov1":["00011","C"],"ld":["00100","D"],"st":["00101","D"],"mul":["00110","A"],"div":["00111","C"],"rs":["01000","B"],"ls":["01001","B"],"xor":["01010","A"],"or":["01011","A"],"and":["01100","A"],"not":["01101","C"],"cmp":["01110","C"],"jmp":["01111","E"],"jlt":["10000","E"],"jgt":["10001","E"],"je":["10010","E"],"hlt":["10011","F"],}
 
 Address=[]
@@ -82,55 +82,71 @@ else:
             Address.append(add_count)
             add_count+=1
             
-            if x[0]==":":
+            if x[0][-1]==":":
                 print(end='')
             else:
+                #for Type A instruction
                 if x[0]=="add" or x[0]=="sub" or x[0]=="mul" or x[0]=="xor" or x[0]=="or" or x[0]=="and":                
-                        
-                        if(x[1] not in REG_ADD.keys() or x[2] not in REG_ADD.keys() or x[3] not in REG_ADD.keys()):
-                            flag=1
-                            print("Typos in register name.")
-                
+                        if len(x)==5:
 
-                if x[0]=="mov" or x[0]=="rs" or x[0]=="ls":
-                    if (x[1] in REG_ADD.keys()):
-                        if(x[2][0]=="$"):
-                            z=int(x[2][1:])
-                            if(z<0 or z>255):
+                            if(x[1] not in REG_ADD.keys() or x[2] not in REG_ADD.keys() or x[3] not in REG_ADD.keys()):
                                 flag=1
-                                print("Illegal immediate values.")
+                                if x[1]=="FLAGS" or x[2]=="FLAGS" or x[3]=="FLAGS":
+                                    print("Illegal use of FLAGS register.")
+                                else:
+                                    print("Typos in register name.")
+                
+                #for Type B instruction
+                if (x[0]=="mov" and x[2][0]=="$") or x[0]=="rs" or x[0]=="ls":
+                    if (x[1] in REG_ADD.keys()):
                         
-                        else:
+                        z=int(x[2][1:])
+                        if(z<0 or z>255):
                             flag=1
-                            print("General Syntax error.")
+                            print("Illegal immediate values.")
                     else:
                         flag=1
-                        print("Typos in register name.")
-                
+                        if x[1]=="FLAGS" :
+                                    print("Illegal use of FLAGS register.")
+                        else:
+                            print("Typos in register name.")
+                else :
+                    if(x[0]=="mov" and x[2][0]!="R"):
+                        if (x[2][0]!="$"):
+                            flag=1
+                            print("General Syntax error.")
 
 
+                #for Type C instruction
+                if (x[0]=="mov" and x[2][0]=="R") or x[0]=="div" or x[0]=="cmp" or x[0]=="not":
 
-                if x[0]=="mov1" or x[0]=="div" or x[0]=="cmp" or x[0]=="not":
-                    
                     if(x[1] not in REG_ADD.keys() and x[2] not in REG_ADD.keys()):
                         flag=1
-                        print("Typos in register name.")                
+                        if x[1]=="FLAGS" :
+                            print("Illegal use of FLAGS register.")
+                        else:
+                            print("Typos in register name.")                
                 
 
-
+                #for Type D instruction
                 if x[0]=="ld" or x[0]=="st":
                     
                     if(x[1] not in REG_ADD.keys()):
                         flag=1
-                        print("Typos in register name.")
+                        if x[1]=="FLAGS":
+                                print("Illegal use of FLAGS register.")
+                        else:        
+                            print("Typos in register name.")
 
                     if(x[2] not in Var.keys()):
                         flag=1
                         print("Use of undefined variables.")
-                
+
+                #for Type F instruction
                 if x[0]=="hlt" and c!=len(assemblyfile):
                     print("hlt must be at the end")
-
+                
+                #for Type E instruction
                 if x[0]=="jmp" or x[0]=="jlt" or x[0]=="jgt" or x[0]=="je":
                     
                     if((x[1] +":") not in Label_add.keys()):
@@ -166,34 +182,53 @@ else:
                 if x[0]==":":
                     print(end='')
                 else:
+                    # type A instruction
                     if x[0]=="add" or x[0]=="sub" or x[0]=="mul" or x[0]=="xor" or x[0]=="or" or x[0]=="and":
                         if((x[1] and x[2] and x[3]) in REG_ADD.keys()):
                             print (Instruction[x[0]][0]+"00"+REG_ADD.get(x[1])+REG_ADD.get(x[2])+REG_ADD.get(x[3]))
-                        
-                    if x[0]=="mov" or x[0]=="rs" or x[0]=="ls":
+
+                    # type B instruction                        
+                    if  x[0]=="rs" or x[0]=="ls":
                         if (x[1] in REG_ADD.keys()):
                             if(x[2][0]=="$"):
                                 z=int(x[2][1:])
                                 if(0<=z<=255):
                                     print(Instruction[x[0]][0]+REG_ADD.get(x[1])+Bin(z))
-
-                            
-
-                    if x[0]=="mov1" or x[0]=="div" or x[0]=="cmp" or x[0]=="not":
-                        if(x[1] and x[2] in REG_ADD.keys()):
-                            print (Instruction[x[0]][0]+"00000"+REG_ADD.get(x[1])+REG_ADD.get(x[2]))
-                        
                     
+                    #for mov instruction of type B
+                    if (x[0]=="mov" and x[2][0]=="$"):                        
+                        if (x[1] in REG_ADD.keys()):
+                            
+                            z=int(x[2][1:])
+                            if(0<=z<=255):
+                                print("00010"+REG_ADD.get(x[1])+Bin(z))
+
+                    #for mov instruction of type C
+                    if x[0]=="mov" and x[1]in REG_ADD.keys() and (x[2] in REG_ADD.keys() or x[2]=="FLAGS"):
+                        if x[2]=="FLAGS":
+                            print(("00011")+"00000"+REG_ADD.get(x[1])+"111")
+                        else:
+                            print ("00011"+"00000"+REG_ADD.get(x[1])+REG_ADD.get(x[2]))
+
+                    # type C instruction
+                    if  x[0]=="div" or x[0]=="cmp" or x[0]=="not":
+                        if(x[1] in REG_ADD.keys() and (x[2] in REG_ADD.keys() or x[2]=="FLAGS")):
+                            if x[2]!="FLAGS":
+                                print (Instruction[x[0]][0]+"00000"+REG_ADD.get(x[1])+REG_ADD.get(x[2]))
+                            else:
+                                print (Instruction[x[0]][0]+"00000"+REG_ADD.get(x[1])+"111")
+
+                    # type D instruction
                     if x[0]=="ld" or x[0]=="st":
                         if(x[1] in REG_ADD.keys() and x[2] in Var.keys()):
                             z=Var.get(x[2])
                             print(Instruction[x[0]][0]+REG_ADD.get(x[1])+Bin(z))
                     
-                    
+                    # type E instruction
                     if x[0]=="jmp" or x[0]=="jlt" or x[0]=="jgt" or x[0]=="je":
                             print(Instruction[x[0]][0]+"000"+Bin(Label_add[x[1]+":"]) )
                         
-                    
+                    # type F instruction
                     if  x[0]=="hlt":
                         print(Instruction[x[0]][0]+"00000000000")
                 
