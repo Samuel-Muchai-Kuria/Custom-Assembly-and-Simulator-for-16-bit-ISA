@@ -2,8 +2,8 @@
 #group members: Aditya, Rishav,Samuel
 import sys
 assemblyfile=sys.stdin.read().splitlines()
-# with open("read.txt") as r:
-    # assemblyfile=r.read().splitlines()
+#with open("read.txt") as r:
+ #   assemblyfile=r.read().splitlines()
 
 
 
@@ -247,4 +247,7 @@ else:
 
     
 
-         
+     
+
+
+    
